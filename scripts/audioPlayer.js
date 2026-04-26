@@ -113,7 +113,7 @@ export async function ensureAudioLoaded(requiredNotes = []) {
 			if (audioPool[key]) continue;
 			if (skipLoad.has(key)) continue;
 
-			const url = `Sounds/${folder}/${note}.opus`;
+			const url = `sounds/${folder}/${note}.opus`;
 
 			const buffer = await loadBuffer(url);
 			if (!buffer) continue;

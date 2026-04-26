@@ -103,6 +103,7 @@
     text-align: left;
     background-color: #2b2a33 !important;
     padding: 2px 5px !important;
+    color: white;
 }
 
 #modsMenu input {
@@ -116,6 +117,7 @@
 
 #modsMenu label {
     padding: 5px;
+    color: white;
 }
 
 #modsMenu label:hover {

@@ -77,3 +77,47 @@
     border-radius: 0 6px 6px 0;
     height: calc(100% - 10px); /* 10px is the margin top for download btm */
 }
+
+
+/* Modifiers select */
+
+#modsDropdown {
+    position: relative;
+    display: inline-block;
+}
+
+#modsMenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #2b2a33;
+    box-sizing: border-box;
+    z-index: 1000;
+    border: 1px solid #484e51;
+    border-radius: 10px;
+}
+
+#modsBtn {
+    text-align: left;
+    background-color: #2b2a33 !important;
+    padding: 2px 5px !important;
+}
+
+#modsMenu input {
+    flex: 0;
+    min-width: unset;
+}
+
+#modsMenu.show {
+    display: block;
+}
+
+#modsMenu label {
+    padding: 5px;
+}
+
+#modsMenu label:hover {
+    background: #44434b;;
+}

@@ -1,4 +1,4 @@
-function noteToBardNote(realNote, noteOverrides = null) {
+function noteToBardNote(realNote, noteOverrides = null, modsEnabled) {
 	const deviceMappings = setDeviceMapping();
 	const { octUp, octDown, sharp, flat, pitches } = deviceMappings;
 
@@ -26,10 +26,13 @@ function noteToBardNote(realNote, noteOverrides = null) {
 		};
 	}
 
+    const allowOctDown = modsEnabled.octDown !== false;
+    const allowOctUp = modsEnabled.octUp !== false;
+    const allowSharp = modsEnabled.sharp !== false;
+
 
 	const realPitch = realNote[0];
 	const realOctave = parseInt(realNote.match(/\d+/)?.[0], 10);
-
 
 	let bardPitch = pitches[realPitch];
 
@@ -41,15 +44,15 @@ function noteToBardNote(realNote, noteOverrides = null) {
 
 	let bardModifiers = '';
 
-	if (realOctave <= 3) {
+	if (realOctave <= 3 && allowOctDown) {
 		bardModifiers += octDown;
 		build.push("octDown");
-	} else if (realOctave >= 5) {
+	} else if (realOctave >= 5 && allowOctUp) {
 		bardModifiers += octUp;
 		build.push("octUp");
 	}
 
-	if (realNote.includes('#')) {
+	if (realNote.includes('#') && allowSharp) {
 		bardModifiers += sharp;
 		build.push("sharp");
 	}
@@ -116,9 +119,12 @@ export function convertToBard(input, midiBpm = null) {
 	setDeviceMapping()
 	const noteOverrides = JSON.parse(localStorage.getItem("noteOverride"));
 
+    const modsEnabled = {};
+	document.querySelectorAll("#modsMenu input[type='checkbox']").forEach((checkbox) => {
+		modsEnabled[checkbox.value] = checkbox.checked;
+	});
+
 	const result = [];
-	let globalMin = null;
-	let globalMax = null;
 
 	if (midiBpm != null) {
 		const map = groupByDelay(input);
@@ -136,7 +142,7 @@ export function convertToBard(input, midiBpm = null) {
 
 			const calcDelay = +(rawDelay * (midiBpm / bpmEle.value)).toFixed(4);
 
-			const noteResult = noteToBardNote(highestNote, noteOverrides)
+			const noteResult = noteToBardNote(highestNote, noteOverrides, modsEnabled)
 
 			result.push({
 				note: noteResult.note,
@@ -145,14 +151,6 @@ export function convertToBard(input, midiBpm = null) {
 			});
 
 			const value = getNoteValue(highestNote);
-
-			if (globalMax === null || value > getNoteValue(globalMax)) {
-				globalMax = highestNote;
-			}
-
-			if (globalMin === null || value < getNoteValue(globalMin)) {
-				globalMin = highestNote;
-			}
 
 			prevTime = delay;
 		}
@@ -163,7 +161,7 @@ export function convertToBard(input, midiBpm = null) {
 
 		for (const notes of input) {
 
-			const noteResult = noteToBardNote(notes.note, noteOverrides)
+			const noteResult = noteToBardNote(notes.note, noteOverrides, modsEnabled)
 
 			result.push({
 				note: noteResult.note,
@@ -173,21 +171,9 @@ export function convertToBard(input, midiBpm = null) {
 
 			const value = getNoteValue(notes.note);
 
-			if (globalMax === null || value > getNoteValue(globalMax)) {
-				globalMax = notes.note;
-			}
-
-			if (globalMin === null || value < getNoteValue(globalMin)) {
-				globalMin = notes.note;
-			}
-
 			prevTime = notes.delay;
 		}
 	}
 
-	return {
-		notes: result,
-		highestNote: globalMax,
-		lowestNote: globalMin
-	};
+	return result;
 }

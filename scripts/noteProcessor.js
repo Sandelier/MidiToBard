@@ -1,7 +1,6 @@
 const converterEle = document.getElementById('converter');
 const thresholdEle = converterEle.querySelector('.threshold');
 const maxLengthEle = converterEle.querySelector('.maxLength');
-const rangeEle = converterEle.querySelector('.range');
 
 const parserSettingsEle = document.getElementById('parserSettings')
 const nameEle = parserSettingsEle.querySelector('.name');
@@ -15,16 +14,16 @@ let bpmForConversion = null;
 let convertToBard;
 
 export async function main() {
-    const currentMode = document.querySelector('#modeContainer .modeSelected').dataset.mode;
+	const currentMode = document.querySelector('#modeContainer .modeSelected').dataset.mode;
 
 	const octaveChange = parseInt(octaveEle.value, 10) || 0;
 
-    let getHighestNote;
-    let groupByDelay;
-    ({ convertToBard, groupByDelay, getHighestNote } = await import("./noteMapper.js"));
+	let getHighestNote;
+	let groupByDelay;
+	({ convertToBard, groupByDelay, getHighestNote } = await import("./noteMapper.js"));
 
 	if (currentMode === "oseq") {
-        const { onlineSequencerNotes } = await import("./sequencerParser.js");
+		const { onlineSequencerNotes } = await import("./sequencerParser.js");
 		const bpm = bpmEle.value > 0 ? bpmEle.value : 120;
 		const delayPerSpace = 60 / bpm / 4;
 
@@ -51,7 +50,7 @@ export async function main() {
 		bpmForConversion = null;
 
 	} else if (currentMode === "midi") {
-        const { midi } = await import("./midiParser.js");
+		const { midi } = await import("./midiParser.js");
 		processedNotes = midi.tracks
 			.flatMap(track => track.notes)
 			.map(note => ({
@@ -66,8 +65,7 @@ export async function main() {
 		return;
 	}
 
-	const result = convertToBard(processedNotes, bpmForConversion);
-	rawBardNotes = result.notes;
+	rawBardNotes = convertToBard(processedNotes, bpmForConversion);
 
 	converterEle.querySelector('.name').value = nameEle.value;
 	converterEle.querySelector('.notes').textContent = rawBardNotes.length;
@@ -75,8 +73,6 @@ export async function main() {
 	converterEle.querySelector('.songLength').textContent = rawBardNotes
 		.reduce((sum, note) => sum + (note.delay || 0), 0)
 		.toFixed(2);
-
-	rangeEle.textContent = `${result.lowestNote} - ${result.highestNote}`;
 
 	const groupedNotes = groupNotes(rawBardNotes);
 	thresholdEle.value = groupedNotes.threshold;
@@ -95,7 +91,7 @@ export async function main() {
 		})
 		.map(item => item.build);
 
-    (await import("./audioPlayer.js")).ensureAudioLoaded(uniqueNotes);
+	(await import("./audioPlayer.js")).ensureAudioLoaded(uniqueNotes);
 }
 
 
@@ -211,6 +207,33 @@ if (savedDevice) {
 deviceSelect.addEventListener('change', () => {
 	localStorage.setItem('device', deviceSelect.value);
 
-	const result = convertToBard(processedNotes, bpmForConversion);
-	rawBardNotes = result.notes;
+	rawBardNotes = convertToBard(processedNotes, bpmForConversion);
+});
+
+document.querySelectorAll("#modsMenu input[type='checkbox']");
+
+// Modifier change
+const modsBtn = document.getElementById("modsBtn");
+const modsMenu = document.getElementById("modsMenu");
+const modsBoxes = modsMenu.querySelectorAll("input[type='checkbox']");
+
+modsBtn.addEventListener("click", (e) => {
+	e.stopPropagation();
+	modsMenu.classList.toggle("show");
+});
+
+document.addEventListener("click", (e) => {
+	if (!modsBtn.contains(e.target) && !modsMenu.contains(e.target)) {
+		modsMenu.classList.remove("show");
+	}
+});
+
+modsMenu.addEventListener("click", (e) => {
+	e.stopPropagation();
+});
+
+modsBoxes.forEach(cb => {
+	cb.addEventListener("change", () => {
+		rawBardNotes = convertToBard(processedNotes, bpmForConversion);
+	});
 });

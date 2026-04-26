@@ -95,11 +95,6 @@
                     <span class="songLength"></span>
                 </div>
 
-                <div>
-                    <span>Range:</span>
-                    <span class="range"></span>
-                </div>
-
                 <label>
                     Device:
                     <select class="device" name="device">
@@ -109,6 +104,27 @@
                 
                     </select>
                 </label>
+
+                <div id="modsDropdown">
+                    <button id="modsBtn">Modifiers</button>
+                    <div id="modsMenu">
+                        <label>
+                            Sharp
+                            <input type="checkbox" value="sharp" checked>
+                        </label>
+                        
+                        <label>
+                            Octave Up
+                            <input type="checkbox" value="octUp" checked>
+                        </label>
+
+                        <label>
+                            Octave Down
+                            <input type="checkbox" value="octDown" checked>
+                        </label>
+
+                    </div>
+                </div>
 
                 <span>Grouping settings</span>
                 <label>

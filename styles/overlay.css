@@ -1,0 +1,288 @@
+#overlay {
+	position: fixed;
+	inset: 0;
+	background-color: #0f1111;
+	z-index: 9999;
+
+	display: none;
+	flex-direction: column;
+
+	width: 100%;
+	height: 100dvh;
+
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition: opacity 0.1s ease-out, visibility 0.1s ease-out;
+}
+
+#overlay.active {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+}
+
+#closeOverlay {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	z-index: 10000;
+	border: none;
+	padding: 10px;
+	cursor: pointer;
+	background: none;
+	color: #ff4d4d;
+	font-size: clamp(30px, 4vw, 60px);
+	line-height: clamp(30px, 4vw, 60px);
+}
+
+#overlayContainer {
+	flex: 1;
+	overflow-y: auto;
+
+	margin: 20px;
+	border-radius: 10px;
+	border: solid 1px #484e51;
+	color: white;
+	padding: 20px;
+}
+
+@media (max-width: 500px) {
+	#overlayContainer {
+		margin: 0;
+	}
+
+	#closeOverlay {
+		top: 0;
+		right: 0;
+	}
+}
+
+/* Playtrack */
+#playTrack {
+	margin: 20px;
+	margin-top: 0;
+	padding: 15px 0px 15px 0px;
+	border-radius: 10px;
+
+	display: none;
+	flex-direction: column;
+	gap: 12px;
+}
+
+#trackControls {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: end;
+}
+
+@media (max-width: 700px) {
+	#trackControls {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	#leftControls,
+	#centerControls {
+		width: 100%;
+		justify-content: space-evenly;
+	}
+}
+
+#trackControls * {
+	font-size: 16px;
+}
+
+#trackControls label {
+	align-content: center;
+	text-align: center;
+	user-select: none;
+}
+
+#trackControls label input {
+	display: flex;
+	text-align: center;
+	width: 100%;
+}
+
+#leftControls {
+	justify-self: start;
+	display: flex;
+	align-items: center;
+	user-select: none;
+	margin-right: 5px;
+}
+
+#centerControls {
+	justify-self: center;
+	display: flex;
+	gap: 16px;
+}
+
+#fontRange,
+#volumeRange {
+	background: none;
+	border: none;
+
+	max-width: 0;
+	opacity: 0;
+	transform: scaleX(0);
+
+	overflow: hidden;
+	white-space: nowrap;
+
+	transition: max-width 0.25s ease, opacity 0.2s ease, transform 0.25s ease;
+}
+
+#volumeContainer > label > img {
+    width: 24px;
+    height: 24px;
+}
+
+#fontContainer,
+#volumeContainer {
+	display: flex;
+	padding: 0px 5px;
+	border-radius: 6px;
+	align-items: center;
+}
+
+@media (max-width: 700px) {
+
+	#fontRange,
+	#volumeRange {
+		max-width: 120px;
+		opacity: 1;
+		transform: scaleX(1);
+	}
+}
+
+@media (min-width: 701px) {
+
+	#fontContainer:hover,
+	#volumeContainer:hover {
+		background: #3a3f44;
+	}
+
+	#fontContainer:hover #fontRange,
+	#volumeContainer:hover #volumeRange {
+		max-width: 120px;
+		opacity: 1;
+		transform: scaleX(1);
+	}
+}
+
+#fontRange::-moz-range-track,
+#volumeRange::-moz-range-track {
+	background: #3a3f44;
+}
+
+#fontRange::-webkit-slider-thumb,
+#fontRange::-moz-range-thumb,
+#volumeRange::-webkit-slider-thumb,
+#volumeRange::-moz-range-thumb {
+	outline: none;
+}
+
+#fontRange::-moz-range-progress,
+#volumeRange::-moz-range-progress {
+	background: #00d9ff;
+}
+
+#track {
+	position: relative;
+	width: 100%;
+	height: 10px;
+	border-radius: 999px;
+	background: transparent;
+	cursor: grab;
+}
+
+#track-bg {
+	position: absolute;
+	inset: 0;
+	background: #3a3f44;
+	border-radius: 999px;
+}
+
+#track-progress {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 0%;
+	background: #e53935;
+	border-radius: 999px;
+	transition: width 0.1s linear;
+}
+
+#track-head {
+	position: absolute;
+	top: 50%;
+	left: 0%;
+	transform: translate(-50%, -50%);
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: white;
+	border: 2px solid #e53935;
+	transition: left 0.1s linear;
+}
+
+#track-head:active {
+	cursor: grabbing;
+}
+
+
+#track-head-label {
+	position: absolute;
+	top: -25px;
+	left: 0%;
+	transform: translateX(-50%);
+
+	transition: left 0.1s linear;
+	user-select: none;
+}
+
+
+/* Note container */
+
+#bardNoteContainer {
+	white-space: pre-wrap;
+	font-size: clamp(16px, 5vw, 40px);
+	user-select: none;
+}
+
+.note-row {
+	display: grid;
+}
+
+.note {
+	text-align: left;
+	width: 100%;
+	cursor: pointer;
+}
+
+
+.veryLowDelay {
+	text-decoration: underline;
+	text-decoration-color: #ff8e8e;
+	color: #ff8e8e;
+}
+
+.lowDelay {
+	text-decoration: underline;
+	text-decoration-color: #FFEE8C;
+	color: #FFEE8C;
+}
+
+.longDelay {
+	text-decoration: underline;
+	text-decoration-color: #ff8cf2;
+	color: #ff8cf2;
+}
+
+.note:not([style*="color"]) .noteBracket {
+  color: #00d9ff;
+}

@@ -1,0 +1,123 @@
+#parser {
+	position: relative;
+	text-align: center;
+	padding: 20px;
+	border: 1px solid #3e4446;
+	border-radius: 10px;
+	max-width: 600px;
+	width: 90vw;
+	background: #0f1111;
+
+	margin-left: 20px;
+}
+
+#parser textarea,
+#parser label,
+#parser button,
+#parser input,
+#midiDrop,
+#parser select {
+	font-size: clamp(16px, 2vw, 20px);
+}
+
+@media (max-width: 850px) {
+	#parser {
+		margin: 20px 0px 0px 0px;
+	}
+}
+
+#midiDrop {
+    display: none;
+	flex: 1;
+	border: 2px dashed #484e51;
+	border-radius: 6px;
+	padding: 20px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+#midiDrop:hover {
+	background-color: #2c3032;
+}
+
+#parserSettings {
+	display: none;
+	flex-direction: column;
+	gap: 10px;
+	align-items: stretch;
+	margin-top: 20px
+}
+
+#parserSettings label {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+}
+
+#parserSettings>div {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	font-size: clamp(16px, 2vw, 20px);
+}
+
+
+/* mode container */
+
+#modeContainer {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+#modeContainer button {
+	margin: 0;
+}
+
+.modeSelected {
+	background-color: #2c3032 !important;
+}
+
+/* Onlinesequencer */
+
+#onlineSequencerInput {
+	display: none;
+	width: 100%;
+	background: none;
+	border: 2px dashed #484e51;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+	color: #e8e6e3;
+	resize: none;
+	height: 62px;
+}
+
+#onlineSequencerInput:focus {
+	outline: none !important;
+	border-color: #719ECE;
+}
+
+
+#onlineSequencerInput::-webkit-input-placeholder {
+	text-align: center;
+	line-height: 58px;
+
+}
+
+#onlineSequencerInput:-moz-placeholder {
+	text-align: center;
+	line-height: 58px;
+
+}
+
+#onlineSequencerInput::-moz-placeholder {
+	text-align: center;
+	line-height: 58px;
+}
+
+#onlineSequencerInput:-ms-input-placeholder {
+	text-align: center;
+	line-height: 58px;
+}

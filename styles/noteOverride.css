@@ -1,0 +1,49 @@
+#noteOverridePanel {
+	display: none;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	height: 100%;
+}
+
+#noteOverridePanel * {
+	font-size: clamp(16px, 2vw, 25px);
+}
+
+#overrideList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	overflow-y: auto;
+}
+
+.override-row {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr) auto;
+	gap: 6px;
+	padding: 8px;
+	background: #161818;
+	border-radius: 8px;
+}
+
+.override-row input,
+.override-row select {
+	background: #0f1111;
+	color: #fff;
+	border: 1px solid #484e51;
+	border-radius: 6px;
+	padding: 6px;
+	outline: none;
+	cursor: pointer;
+	transition: background-color 0.3s ease-out;
+}
+
+.override-row button {
+	background: #ff4d4d;
+	border: none;
+	color: white;
+	border-radius: 6px;
+	cursor: pointer;
+	aspect-ratio: 1 / 1;
+	height: 100%;
+}

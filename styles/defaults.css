@@ -1,0 +1,147 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: monospace;
+}
+
+body {
+	height: 100%;
+	background-color: #0f1111;
+}
+
+.waiting * {
+	cursor: wait !important;
+}
+
+#siteContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 20px;
+	min-height: 100dvh;
+}
+
+@media (max-width: 850px) {
+	#siteContainer {
+		flex-direction: column;
+		justify-content: start;
+		min-height: 100%;
+	}
+}
+
+p,
+a,
+h1,
+h2,
+h3,
+label,
+button,
+div {
+	color: #e8e6e3
+}
+
+h1 {
+	padding-bottom: 20px
+}
+
+
+input,
+select {
+	flex: 1;
+	min-width: 0;
+	background-color: #2b2a33;
+	color: white;
+	border: 1px solid #484e51;
+	padding: 0px 2px 0px 2px;
+	outline: none;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+
+#parserSettings button,
+#converter button,
+#playTrack button,
+#modeContainer button,
+header *,
+#noteOverridePanel>button {
+	width: 100%;
+	margin-top: 10px;
+	padding: 10px;
+	border: solid 1px #484e51;
+	border-radius: 6px;
+	background-color: transparent;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+#parserSettings button:hover,
+#converter button:hover,
+#playTrack button:hover,
+#modeContainer button:hover,
+header *:hover,
+#noteOverridePanel>button:hover {
+	background-color: #2c3032;
+}
+
+
+/* Scrollbar */
+
+* {
+	scrollbar-width: 8px;
+	scrollbar-color: #444 transparent;
+}
+
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: #444;
+	border-radius: 999px;
+	border: 2px solid transparent;
+	background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background-color: #666;
+}
+
+*::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+
+/* Made by */
+#madeBy {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	font-size: clamp(16px, 2vw, 20px);
+	padding: 2px;
+	border: 1px solid #3e4446;
+	border-radius: 0px 10px 0px 0px;
+}
+
+#madeBy img {
+	height: 1em;
+	vertical-align: middle;
+}
+
+#madeBy a {
+	text-decoration: none;
+}

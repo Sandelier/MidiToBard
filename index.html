@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midi to Bard</title>
+    <meta name="description" content="Converts Midi / OnlineSequencer to Neverwinter Bard notes">
+    <link rel="icon" type="image/webp" href="images/favicon.webp">
+
+    <meta property="og:title" content="Midi to Bard">
+    <meta property="og:description" content="Converts Midi / OnlineSequencer to Neverwinter Bard notes">
+    <meta property="og:type" content="website">
+
+    <link rel="stylesheet" href="styles/defaults.css">
+    <link rel="stylesheet" href="styles/parser.css">
+    <link rel="stylesheet" href="styles/converter.css">
+    <link rel="stylesheet" href="styles/overlay.css">
+    <link rel="stylesheet" href="styles/header.css">
+    <link rel="stylesheet" href="styles/noteOverride.css">
+    <link rel="stylesheet" href="styles/deviceLayout.css">
+</head>
+<body>
+
+    <header>
+        <button id="infoBtn">Info</button>
+        <button id="deviceLayoutBtn">Device layout</button>
+        <button id="noteOverrideBtn">Note Override</button>
+    </header>
+
+    <main id="siteContainer">
+        <div id="parser">
+            <h1 id="modeName">Select mode</h1>
+
+            <div id="modeContainer">
+                <button data-mode="midi">Midi</button>
+                <button data-mode="oseq">Online Sequencer</button>
+            </div>
+
+            <textarea id="onlineSequencerInput" placeholder="Paste OnlineSequencer note sequence"></textarea>
+
+            <div id="midiDrop">
+                Drop MIDI
+            </div>
+
+            <div id="parserSettings">
+                <label>
+                    Name:
+                    <input type="text" class="name" placeholder="Name" name="name" autocomplete="off">
+                </label>
+
+                <label>
+                    BPM:
+                    <input type="number" inputMode=numeric class="bpm" name="bpm" placeholder="120" autocomplete="off">
+                </label>
+
+                <label>
+                    Octave:
+                    <select class="octave" name="octave">
+                        <option value="-2">-2</option>
+                        <option value="-1">-1</option>
+                        <option value="0" selected>0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
+                </label>
+
+                <div>
+                    <span>Notes:</span>
+                    <span class="notes"></span>
+                </div>
+
+                <div>
+                    <span>Song length:</span>
+                    <span class="songLength"></span>
+                </div>
+
+                <button id="convertBtn">Convert</button>
+            </div>
+        </div>
+
+        <div id="converter">
+            <div id="converterSettings">
+                <label>
+                    Name:
+                    <input type="text" name="name" class="name" placeholder="name" autocomplete="off">
+                </label>
+
+                <div>
+                    <span>Notes:</span>
+                    <span class="notes"></span>
+                </div>
+
+                <div>
+                    <span>Song length:</span>
+                    <span class="songLength"></span>
+                </div>
+
+                <div>
+                    <span>Range:</span>
+                    <span class="range"></span>
+                </div>
+
+                <label>
+                    Device:
+                    <select class="device" name="device">
+                      
+                        <option value="Keyboard" selected>Keyboard</option>
+                        <option value="Controller">Controller</option>
+                
+                    </select>
+                </label>
+
+                <span>Grouping settings</span>
+                <label>
+                    Max Length:
+                    <input type="number" inputMode=numeric class="maxLength" placeholder="10" value="10" name="maxLength">
+                </label>
+
+                <label>
+                    Threshold:
+                    <input type="number" inputMode=numeric class="threshold" placeholder="1" value="1" name="threshold">
+                </label>
+            </div>
+
+            <button id="previewBtn">Preview</button>
+            <div id="downloadContainer">
+                <button id="downloadBtn">Download</button>
+                <select id="formatSelect" aria-label="Download format">
+                    <option value="txt" selected>txt</option>
+                    <option value="xlsx">xlsx</option>
+                    <option value="json">json</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="madeBy">
+            <a href="https://github.com/Sandelier/MidiToBard" target="_blank" rel="noopener noreferrer">
+                Sandelier - 1.0.0
+                <img src="images/github.svg" alt="GitHub" />
+            </a>
+        </div>
+    </main>
+
+    <div id="overlay" tabindex="0">
+        <div id="overlayContainer">
+            <button id="closeOverlay">✕</button>
+            <div id="bardNoteContainer"></div>
+
+
+            <div id="infoPanel">
+                <section>
+            		<h3>Midi file sources</h3>
+            		<ul>
+            			<li>Find them in <a href="https://onlinesequencer.net/sequences" target="_blank" rel="noopener noreferrer">OnlineSequencer</a> (midi export is in -1 octave)</li>
+                        <li>Use an <a href="https://addons.mozilla.org/en-US/firefox/addon/music-score-downloader/" target="_blank" rel="noopener noreferrer">Music Score downloader</a> extension to download midis from Museoscore</li>
+                        <li><a href="https://github.com/svsdval/video2midi" target="_blank" el="noopener noreferrer">Youtube piano videos into midi</a></li>
+                    </ul>
+                    <p>Obviously these aren't the only places to find Midis, but with these three, you can get almost anything</p>
+            	</section>
+            	<section>
+            		<h3>Conversion</h3>
+            		<ul>
+            			<li>One note at a time, so simplify your Midi file (e.g. OnlineSequencer)</li>
+            			<li>Uses the highest note within the same column</li>
+                        <li>Threshold is applied globally, so preferably convert in batches</li>
+                        <li>Brackets are used if max length is too small to contain the note sequence</li>
+                        <li>Flats are only available using Note Override</li>
+                        <li>Notes are constrained to C3-B5. For example, F1 and F3 will be treated as the same note unless changed in Note Override</li>
+                        <li>All instrument tracks are merged together</li>
+            		</ul>
+            	</section>
+                <section>
+            		<h3>Preview colors</h3>
+            		<ul>
+            			<li><span style="color: #00d9ff;">&lt;5</span>: Next note to be played</li>
+                        <li><span style="color: #2ecc71;">1</span>: Played notes</li>
+                        <li>&lt;▲2: Not yet played</li>
+                        <li><span style="color: #ff8cf2">&lt;▼6</span>: Notes played in 1s or more</li>
+                        <li><span style="color: #FFEE8C;">&gt;8</span>: Notes played in 0.2s or less</li>
+                        <li><span style="color: #ff8e8e;">&gt;▲6</span>: Notes played in 0.1s or less</li>
+            		</ul>
+                    <p>Red is not inherently bad, but if theres alternating notes, the song might be impossible to play</p>
+            	</section>
+            	<section>
+            		<h3>Privacy</h3>
+            		<p>I don't collect any kind of data, but GitHub may process some technical data</p>
+                    <p>You can run the webpage locally by downloading the Github repository and while in the folder, use like Python:</p>
+            		<code>python -m http.server 8000 --bind 127.0.0.1</code>
+            	</section>
+                <section>
+            		<h3>Found a bug?</h3>
+            		<p>Create an issue in <a href="https://github.com/Sandelier/MidiToBard/issues" target="_blank" rel="noopener noreferrer">Github</a></p>
+                    <p>Discord: 2good4sand</p>
+            	</section>
+                <section>
+            		<h3>Acknowledgements</h3>
+                    <p><a href="https://github.com/Tonejs/Midi" target="_blank" rel="noopener noreferrer">tone.js 2.0.28</a> used for manipulating Midi files</p>
+                    <p><a href="https://github.com/exceljs/exceljs" target="_blank" rel="noopener noreferrer">ExcelJS 4.4.0</a> used to save notes in Excel</p>
+            	</section>
+            </div>
+
+            <div id="deviceLayout"></div>
+
+            <div id="noteOverridePanel">
+                <button id="addOverrideBtn">+ Add Note Override</button>
+                <div id="overrideList"></div>
+            </div>
+        </div>
+
+        <div id="playTrack">
+
+            <div id="track">
+                <div id="track-bg"></div>
+                <div id="track-progress"></div>
+                <div id="track-head"></div>
+                <div id="track-head-label">0</div>
+            </div>
+
+            <div id="trackControls">
+                <div id="leftControls">
+                    <div id="volumeContainer">
+                        <label for="volumeRange">
+                            <img src="images/audio.svg" alt="Volume" loading="lazy">
+                        </label>
+                        <input id="volumeRange" type="range" min="0" max="100" value="10">
+                    </div>
+                    <div id="fontContainer">
+                        <label for="fontRange">
+                            Aa
+                        </label>
+                        <input id="fontRange" type="range" min="0" max="50" value="0">
+                    </div>
+                </div>
+
+                <div id="centerControls">
+                    <label>
+                        Max length
+                        <input type="number" inputmode="numeric" class="maxLength" value="10" name="maxLength">
+                    </label>
+
+                    <label>
+                        Threshold
+                        <input type="number" inputmode="numeric" class="threshold" value="10" name="threshold">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./scripts/bootstrap/lazyLoader.js"></script>
+    <script type="module" src="./scripts/bootstrap/modeChanger.js"></script>
+    <script defer src="./scripts/bootstrap/init.js"></script>
+</body>
+</html>

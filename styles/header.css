@@ -1,0 +1,57 @@
+header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	color: white;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 5px;
+	user-select: none;
+	flex-wrap: wrap;
+}
+
+@media (max-width: 850px) {
+	header {
+		position: unset;
+		height: auto;
+	}
+}
+
+header * {
+	width: auto;
+	font-size: 20px;
+	padding: 5px;
+	height: 34px;
+}
+
+
+/* Overlay stuff */
+
+#infoPanel {
+	display: none;
+	font-size: clamp(16px, 2vw, 25px);
+	line-height: 1.6;
+	color: #e8e6e3;
+}
+
+#infoPanel h3 {
+	margin-top: 24px;
+	margin-bottom: 10px;
+	color: #00d9ff;
+}
+
+#infoPanel ul {
+	padding-left: 20px;
+}
+
+#infoPanel li {
+	margin-bottom: 6px;
+}
+
+#infoPanel code {
+	background: #2d2d2d;
+	padding: 5px;
+	border-radius: 8px;
+}

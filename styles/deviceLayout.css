@@ -1,0 +1,50 @@
+#deviceLayout .device {
+	background: none;
+	border-radius: 14px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+#deviceLayout .device * {
+	font-size: clamp(16px, 2vw, 25px);
+}
+
+#deviceLayout .device:nth-child(2 of .device) {
+	margin-top: 12px;
+}
+
+#deviceLayout .device h3 {
+	font-size: clamp(20px, 2vw, 25px);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	padding-bottom: 8px;
+}
+
+#deviceLayout .device-section {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px;
+	background: rgba(255, 255, 255, 0.03);
+	border-radius: 10px;
+}
+
+#deviceLayout .device-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+#deviceLayout .device-row label {
+	min-width: 110px;
+	font-size: 18px;
+}
+
+#deviceLayout input {
+	padding: 6px 10px;
+	border-radius: 8px;
+	background: #0f1111;
+	outline: none;
+}

@@ -343,29 +343,41 @@ function pauseAudio() {
 	}
 }
 
+
+const playbackBtn = document.getElementById('playbackBtn');
+function handlePlayToggle() {
+	if (timeline.length > 0 && scheduledIndex === timeline.length) {
+		pauseTime = 0;
+		scheduledIndex = 0;
+		startCtxTime = audioCtx.currentTime;
+		lastIndex = -1;
+		setTrackPercent(0);
+		noteLabel.textContent = "0";
+		updateNoteHighlights();
+
+		return;
+	}
+
+    playbackBtn.classList.toggle("playing");
+
+	if (isPlaying) {
+		pauseAudio();
+	} else {
+		playAudio();
+	}
+}
+
 overlay.addEventListener("keydown", (e) => {
 	if (e.code === "Space") {
 		e.preventDefault();
-
-		if (timeline.length > 0 && scheduledIndex == timeline.length) {
-			pauseTime = 0;
-			scheduledIndex = 0;
-			startCtxTime = audioCtx.currentTime;
-			lastIndex = -1;
-			setTrackPercent(0);
-			noteLabel.textContent = "0";
-			updateNoteHighlights();
-
-			return;
-		}
-
-		if (isPlaying) {
-			pauseAudio();
-		} else {
-			playAudio();
-		}
+        handlePlayToggle();
 	}
 });
+
+playbackBtn.addEventListener("click", (e) => {
+    handlePlayToggle();
+});
+
 
 track.addEventListener("pointerdown", async (e) => {
 	isDragging = true;

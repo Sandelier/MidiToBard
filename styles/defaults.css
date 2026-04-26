@@ -70,7 +70,6 @@ input[type="number"] {
 
 #parserSettings button,
 #converter button,
-#playTrack button,
 #modeContainer button,
 header *,
 #noteOverridePanel>button {
@@ -86,7 +85,6 @@ header *,
 
 #parserSettings button:hover,
 #converter button:hover,
-#playTrack button:hover,
 #modeContainer button:hover,
 header *:hover,
 #noteOverridePanel>button:hover {

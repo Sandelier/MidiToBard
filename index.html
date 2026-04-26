@@ -209,11 +209,23 @@
 
         <div id="playTrack">
 
-            <div id="track">
-                <div id="track-bg"></div>
-                <div id="track-progress"></div>
-                <div id="track-head"></div>
-                <div id="track-head-label">0</div>
+            <div id="trackContainer">
+                <button id="playbackBtn">
+                    <svg class="playbackSvg play" viewBox="0 0 24 24">
+                      <polygon points="8,5 19,12 8,19"></polygon>
+                    </svg>
+
+                    <svg class="playbackSvg pause" viewBox="0 0 24 24">
+                      <rect x="6" y="5" width="4" height="14"></rect>
+                      <rect x="14" y="5" width="4" height="14"></rect>
+                    </svg>
+                </button>
+                <div id="track">
+                    <div id="track-bg"></div>
+                    <div id="track-progress"></div>
+                    <div id="track-head"></div>
+                    <div id="track-head-label">0</div>
+                </div>
             </div>
 
             <div id="trackControls">

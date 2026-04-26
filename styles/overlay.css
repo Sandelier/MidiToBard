@@ -70,6 +70,33 @@
 	gap: 12px;
 }
 
+#trackContainer {
+    display: flex;
+    align-items: center;
+}
+
+#playbackBtn {
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    margin-right: 10px;
+}
+
+.playbackSvg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+    display: none;
+}
+
+#playbackBtn:not(.playing) .play {
+  display: block;
+}
+
+#playbackBtn.playing .pause {
+  display: block;
+}
+
 #trackControls {
 	display: grid;
 	grid-template-columns: 1fr auto 1fr;

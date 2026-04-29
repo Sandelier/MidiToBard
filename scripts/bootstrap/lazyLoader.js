@@ -5,7 +5,8 @@ const actions = {
     noteOverrideBtn: () => import("../overlays/noteOverride.js"),
     previewBtn: () => import("../overlays/notePreview.js"),
     convertBtn: () => import("../noteProcessor.js"),
-    downloadBtn: () => import("../noteDownloader.js")
+    downloadBtn: () => import("../noteDownloader.js"),
+    songListBtn: () => import("../songList.js")
 };
 
 Object.entries(actions).forEach(([id, loader]) => {

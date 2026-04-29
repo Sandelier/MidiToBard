@@ -18,11 +18,13 @@
     <link rel="stylesheet" href="styles/header.css">
     <link rel="stylesheet" href="styles/noteOverride.css">
     <link rel="stylesheet" href="styles/deviceLayout.css">
+    <link rel="stylesheet" href="styles/songList.css">
 </head>
 <body>
 
     <header>
         <button id="infoBtn">Info</button>
+        <button id="songListBtn">Song list</button>
         <button id="deviceLayoutBtn">Device layout</button>
         <button id="noteOverrideBtn">Note Override</button>
     </header>
@@ -181,7 +183,7 @@
                         <li>Threshold is applied globally, so preferably convert in batches</li>
                         <li>Brackets are used if max length is too small to contain the note sequence</li>
                         <li>Flats are only available using Note Override</li>
-                        <li>Notes are constrained to C3-B5. For example, F1 and F3 will be treated as the same note unless changed in Note Override</li>
+                        <li>Notes are constrained to C3-C#6. For example, F1 and F3 will be treated as the same note unless changed in Note Override</li>
                         <li>All instrument tracks are merged together</li>
             		</ul>
             	</section>
@@ -217,6 +219,12 @@
 
             <div id="deviceLayout"></div>
 
+            <div id="songPanel">
+                <input id="songSearch" type="text" placeholder="Search title, artist, or genre..." />
+                <div id="genreButtons"></div>
+                <div id="songList"></div>
+            </div>
+
             <div id="noteOverridePanel">
                 <button id="addOverrideBtn">+ Add Note Override</button>
                 <div id="overrideList"></div>
@@ -226,7 +234,7 @@
         <div id="playTrack">
 
             <div id="trackContainer">
-                <button id="playbackBtn">
+                <button id="playbackBtn" aria-label="Playback">
                     <svg class="playbackSvg play" viewBox="0 0 24 24">
                       <polygon points="8,5 19,12 8,19"></polygon>
                     </svg>

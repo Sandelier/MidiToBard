@@ -1,20 +1,22 @@
 const converterEle = document.getElementById('converter');
 const thresholdEle = converterEle.querySelector('.threshold');
 const maxLengthEle = converterEle.querySelector('.maxLength');
+const modsDropdownEle = document.getElementById('modsDropdown');
 
-const parserSettingsEle = document.getElementById('parserSettings')
-const nameEle = parserSettingsEle.querySelector('.name');
-const bpmEle = parserSettingsEle.querySelector('.bpm');
-const octaveEle = parserSettingsEle.querySelector('.octave');
+const parserEle = document.getElementById('parser');
+const nameEle = parserEle.querySelector('.name');
+const bpmEle = parserEle.querySelector('.bpm');
+const octaveEle = parserEle.querySelector('.octave');
 
 export let rawBardNotes = null;
 let processedNotes = null;
 let bpmForConversion = null;
 
 let convertToBard;
+let modifyNotes = true;
 
 export async function main() {
-	const currentMode = document.querySelector('#modeContainer .modeSelected').dataset.mode;
+	const currentMode = document.querySelector('#modeContainer .modeSelected').dataset.mode
 
 	const octaveChange = parseInt(octaveEle.value, 10) || 0;
 
@@ -65,23 +67,64 @@ export async function main() {
 		return;
 	}
 
-	rawBardNotes = convertToBard(processedNotes, bpmForConversion);
+	modsDropdownEle.style.display = "";
+	rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
 
 	converterEle.querySelector('.name').value = nameEle.value;
 	converterEle.querySelector('.notes').textContent = rawBardNotes.length;
 
 	converterEle.querySelector('.songLength').textContent = rawBardNotes
 		.reduce((sum, note) => sum + (note.delay || 0), 0)
-		.toFixed(2);
+		.toFixed(2)
+		+ "s";
 
 	const groupedNotes = groupNotes(rawBardNotes);
 	thresholdEle.value = groupedNotes.threshold;
 	maxLengthEle.value = groupedNotes.maxLength;
 
 	converterEle.style.display = "flex";
-	converterEle.style.height = document.getElementById('parser').getBoundingClientRect().height + "px";
+	const parserHeight = parserEle.getBoundingClientRect().height;
+	const converterHeight = converterEle.getBoundingClientRect().height;
 
-	// Preloading all the soundfiles so theres no wait for preview since decoding takes a while
+	if (converterHeight < parserHeight) {
+		converterEle.style.height = parserHeight + "px";
+	} else {
+		converterEle.style.height = "";
+	}
+
+	modifyNotes = true;
+	preloadAudio();
+}
+
+// songNotes should be converted to bard notes before calling this function
+export async function directProcess(songNotes, rawSongNotes, name) {
+	rawBardNotes = songNotes;
+	processedNotes = rawSongNotes;
+	modifyNotes = false;
+	// We should still set it so other functions can use converttobard
+	({ convertToBard } = await import("./noteMapper.js"));
+
+	converterEle.querySelector(".name").value = name;
+	converterEle.querySelector(".notes").textContent = rawBardNotes.length;
+
+	converterEle.querySelector(".songLength").textContent = rawBardNotes
+		.reduce((sum, note) => sum + (note.delay || 0), 0)
+		.toFixed(2)
+		+ "s";
+
+	const groupedNotes = groupNotes(rawBardNotes);
+	thresholdEle.value = groupedNotes.threshold;
+	maxLengthEle.value = groupedNotes.maxLength;
+
+	modsDropdownEle.style.display = "none";
+	converterEle.style.display = "flex";
+
+	preloadAudio();
+}
+
+// Preloading all the soundfiles so theres no wait for preview since decoding takes a while
+async function preloadAudio() {
+	let { ensureAudioLoaded } = await import("./audioPlayer.js");
 	const seen = new Set();
 	const uniqueNotes = rawBardNotes
 		.filter(item => {
@@ -91,7 +134,7 @@ export async function main() {
 		})
 		.map(item => item.build);
 
-	(await import("./audioPlayer.js")).ensureAudioLoaded(uniqueNotes);
+	await ensureAudioLoaded(uniqueNotes);
 }
 
 
@@ -207,7 +250,7 @@ if (savedDevice) {
 deviceSelect.addEventListener('change', () => {
 	localStorage.setItem('device', deviceSelect.value);
 
-	rawBardNotes = convertToBard(processedNotes, bpmForConversion);
+	rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
 });
 
 document.querySelectorAll("#modsMenu input[type='checkbox']");
@@ -234,6 +277,6 @@ modsMenu.addEventListener("click", (e) => {
 
 modsBoxes.forEach(cb => {
 	cb.addEventListener("change", () => {
-		rawBardNotes = convertToBard(processedNotes, bpmForConversion);
+		rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
 	});
 });

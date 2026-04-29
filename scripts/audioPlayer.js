@@ -56,8 +56,6 @@ export function playNote(noteInput, when) {
 	source.start(when);
 
 	poolIndex[key] = (index + 1) % 32;
-
-	console.log(`${folder}/${note}`);
 }
 
 /* Preload audio */
@@ -126,8 +124,7 @@ export async function ensureAudioLoaded(requiredNotes = []) {
 		document.body.classList.remove("waiting");
 	})();
 
-	const result = loadingPromise;
 	loadingPromise = null;
 
-	return result;
+	return audioCtx;
 }

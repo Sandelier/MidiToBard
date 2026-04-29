@@ -27,8 +27,7 @@ export async function main() {
     } else if (format == "txt") {
         blob = new Blob([notes], { type: "text/plain" });
     } else if (format == "json") {
-        const noBuild = rawBardNotes.map(({ build, ...rest }) => rest);
-        const bardJson = JSON.stringify(noBuild, null, 4);
+        const bardJson = JSON.stringify(rawBardNotes, null, 4);
         blob = new Blob([bardJson], { type: "application/json" });
     } else {
         console.error("Unknown download format");

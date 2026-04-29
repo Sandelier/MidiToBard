@@ -1,0 +1,169 @@
+#songList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 10px;
+    padding: 10px;
+}
+
+
+@media (max-width: 400px) {
+	#songList {
+		grid-template-columns: auto;
+	}
+}
+
+#songList .song {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 10px 12px;
+    border-radius: 8px;
+
+    background: #1e1e1e;
+    transition: background 0.2s ease;
+}
+
+#songList .song:hover {
+    background: #2a2a2a;
+}
+
+/* Search */
+
+#songSearch {
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 10px 12px;
+
+    border-radius: 8px;
+    border: none;
+    outline: none;
+
+    background: #1e1e1e;
+    color: white;
+
+    font-size: 1rem;
+
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+#songSearch::placeholder {
+    opacity: 0.5;
+}
+
+#songSearch:focus {
+    background: #2a2a2a;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Genre btns */
+
+#genreButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 10px 10px 10px;
+}
+
+#genreButtons button {
+    background: #1e1e1e;
+    color: white;
+
+    border: none;
+    border-radius: 999px;
+
+    padding: 6px 12px;
+    font-size: 1.25em;
+
+    cursor: pointer;
+
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+#genreButtons button:hover {
+    opacity: 1;
+    background: #2a2a2a;
+}
+
+/* info */
+.songInfo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 6px;
+}
+
+.songTitleContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.songTitle {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.songIndex,
+.songArtist {
+    font-size: 1em;
+    opacity: 0.7;
+}
+
+/* meta */
+.songMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    font-size: 1em;
+    opacity: 0.8;
+
+    margin-bottom: 8px;
+}
+
+.songGenre,
+.songDuration,
+.songNotes {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Controls */
+.songControls {
+    display: flex;
+    align-items: center;
+}
+
+.songControls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    font-size: calc(1.25rem * 1.5);
+    opacity: 0.8;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    padding-right: 10px;
+}
+
+.songControls button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* playback */
+.songPlaybackSvg {
+    width: calc(12px * 1.25);
+    height: calc(24px * 1.25);
+    fill: white;
+    display: none;
+}
+
+.playbackBtn:not(.playing) .play {
+    display: block;
+}
+
+.playbackBtn.playing .pause {
+    display: block;
+}

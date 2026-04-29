@@ -26,18 +26,19 @@ function noteToBardNote(realNote, noteOverrides = null, modsEnabled) {
 		};
 	}
 
-    const allowOctDown = modsEnabled.octDown !== false;
-    const allowOctUp = modsEnabled.octUp !== false;
-    const allowSharp = modsEnabled.sharp !== false;
+	const allowOctDown = modsEnabled.octDown !== false;
+	const allowOctUp = modsEnabled.octUp !== false;
+	const allowSharp = modsEnabled.sharp !== false;
 
 
-	const realPitch = realNote[0];
+	let realPitch = realNote[0];
 	const realOctave = parseInt(realNote.match(/\d+/)?.[0], 10);
 
 	let bardPitch = pitches[realPitch];
 
-	if (realPitch === 'C' && realOctave > 4) {
+	if (realPitch === 'C' && realOctave > 5) {
 		bardPitch = pitches["C+"];
+		realPitch = "C+";
 	}
 
 	const build = [];
@@ -55,6 +56,11 @@ function noteToBardNote(realNote, noteOverrides = null, modsEnabled) {
 	if (realNote.includes('#') && allowSharp) {
 		bardModifiers += sharp;
 		build.push("sharp");
+	}
+
+	if (realNote.includes('♭')) {
+		bardModifiers += flat;
+		build.push("flat");
 	}
 
 	build.push(realPitch);
@@ -111,18 +117,23 @@ export function getHighestNote(notes) {
 }
 
 const bpmEle = document.querySelector('#parserSettings .bpm');
-export function convertToBard(input, midiBpm = null) {
+export function convertToBard(input, midiBpm = null, modify = true) {
 	if (!Array.isArray(input)) {
 		throw new Error("Input must be an array");
 	}
 
-	setDeviceMapping()
-	const noteOverrides = JSON.parse(localStorage.getItem("noteOverride"));
+	setDeviceMapping();
 
-    const modsEnabled = {};
-	document.querySelectorAll("#modsMenu input[type='checkbox']").forEach((checkbox) => {
-		modsEnabled[checkbox.value] = checkbox.checked;
-	});
+	let noteOverrides = null;
+	let modsEnabled = {};
+
+	if (modify) {
+		noteOverrides = JSON.parse(localStorage.getItem("noteOverride"));
+
+		document.querySelectorAll("#modsMenu input[type='checkbox']").forEach((checkbox) => {
+			modsEnabled[checkbox.value] = checkbox.checked;
+		});
+	}
 
 	const result = [];
 

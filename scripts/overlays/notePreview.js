@@ -37,6 +37,7 @@ export async function main() {
 
 function renderNotes(notesString, delays) {
 	bardNoteContainer.innerHTML = "";
+    noteElements = [];
 
 	const fragment = document.createDocumentFragment();
 
@@ -95,6 +96,7 @@ function renderNotes(notesString, delays) {
 
         	noteIndex++;
         	rowDiv.appendChild(noteSpan);
+            noteElements.push(noteSpan);
         });
 
 		fragment.appendChild(rowDiv);
@@ -103,10 +105,9 @@ function renderNotes(notesString, delays) {
 	bardNoteContainer.appendChild(fragment);
 }
 
+let noteElements = [];
 function updateNoteHighlights() {
-	const notes = document.querySelectorAll("#bardNoteContainer .note");
-
-	notes.forEach(note => {
+	noteElements.forEach(note => {
 		const i = parseInt(note.dataset.index, 10);
 
 		note.style.color = "";

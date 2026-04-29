@@ -9,7 +9,7 @@ export async function main() {
 
 	if (songsAdded) return;
 
-	const response = await fetch("../songs/songStatistics.json");
+	const response = await fetch("./songs/songStatistics.json");
 	let songStatistics = await response.json();
 
 	songStatistics = Object.fromEntries(

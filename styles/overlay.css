@@ -241,7 +241,6 @@
 	width: 0%;
 	background: #e53935;
 	border-radius: 999px;
-	transition: width 0.1s linear;
 }
 
 #track-head {
@@ -254,7 +253,6 @@
 	border-radius: 50%;
 	background: white;
 	border: 2px solid #e53935;
-	transition: left 0.1s linear;
 }
 
 #track-head:active {
@@ -267,8 +265,6 @@
 	top: -25px;
 	left: 0%;
 	transform: translateX(-50%);
-
-	transition: left 0.1s linear;
 	user-select: none;
 }
 

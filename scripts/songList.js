@@ -188,7 +188,13 @@ function createDiv(text, className) {
 function createButton(text, onClick) {
 	const btn = document.createElement("button");
 	btn.textContent = text;
-	btn.onclick = onClick;
+
+    // Fixes the scroll-tap cancellation issues on mobile
+	btn.addEventListener("pointerup", (e) => {
+		e.stopPropagation();
+		onClick(e);
+	});
+
 	return btn;
 }
 

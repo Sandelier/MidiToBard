@@ -2,6 +2,7 @@ const songListEle = document.getElementById("songList");
 const songPanel = document.getElementById("songPanel");
 
 let songsAdded = false;
+let isLoadingSong = false;
 
 export async function main() {
 	(await import("./overlays/overlayController.js")).showOverlay();
@@ -24,9 +25,6 @@ export async function main() {
 }
 
 // Song structure to DOM
-let currentPlaybackBtn = null;
-let currentSongEle = null;
-
 function addSongs(songStatistics) {
 	const fragment = document.createDocumentFragment();
 	const genresMap = new Map();
@@ -76,46 +74,48 @@ function addSongs(songStatistics) {
 		const controls = createDiv("", "songControls");
 
 		const playbackBtn = createButton("", async () => {
-			const songNotes = await loadSong(songPath);
+			if (isLoadingSong) return;
+			isLoadingSong = true;
+			try {
+				const songNotes = await loadSong(songPath);
 			
-			if (songPath !== currentSongPath) {
-				currentSongPath = songPath;
-			
-				pauseSong();
-				timeline = [];
-				pauseTime = 0;
-				scheduledIndex = 0;
-			
-				if (currentPlaybackBtn && currentPlaybackBtn !== playbackBtn) {
-					currentPlaybackBtn.classList.remove("playing");
+				if (songPath !== currentSongPath) {
+					currentSongPath = songPath;
+				
+					pauseSong();
+					timeline = [];
+					pauseTime = 0;
+					scheduledIndex = 0;
+				
+					document.querySelectorAll('.songControls .playbackBtn.playing').forEach(btn => {
+						btn.classList.remove('playing');
+						btn.closest('.song').style.backgroundColor = "";
+					});
+				
+					await playSong(songNotes);
+				
+					playbackBtn.classList.add("playing");
+					songEle.style.backgroundColor = "#2a2a2a";
+				
+					return;
 				}
 			
-				if (currentSongEle && currentSongEle !== songEle) {
-					currentSongEle.style.backgroundColor = "";
+				if (isPlaying) {
+					pauseSong();
+					document.querySelectorAll('.songControls .playbackBtn.playing').forEach(btn => {
+						btn.classList.remove('playing');
+						btn.closest('.song').style.backgroundColor = "";
+					});
+				
+				} else {
+					await playSong(songNotes);		
+					playbackBtn.classList.add("playing");
+					songEle.style.backgroundColor = "#2a2a2a";
 				}
 			
-				await playSong(songNotes);
-			
-				playbackBtn.classList.add("playing");
-				currentPlaybackBtn = playbackBtn;
-			
-				songEle.style.backgroundColor = "#2a2a2a";
-				currentSongEle = songEle;
-			
-				return;
-			}
-		
-			if (isPlaying) {
-				pauseSong();
-				currentPlaybackBtn = null;
-			} else {
-				await playSong(songNotes);
-				playbackBtn.classList.add("playing");
-				currentPlaybackBtn = playbackBtn;
-			
-				songEle.style.backgroundColor = "#2a2a2a";
-				currentSongEle = songEle;
-			}
+				} finally {
+					isLoadingSong = false;
+				}
 		});
 
 		playbackBtn.setAttribute("aria-label", `Playback ${songName}`);
@@ -188,18 +188,26 @@ function createDiv(text, className) {
 function createButton(text, onClick) {
 	const btn = document.createElement("button");
 	btn.textContent = text;
+	let busy = false;
 
-    // Fixes the scroll-tap cancellation issues on mobile
-	btn.addEventListener("pointerup", (e) => {
+	// Fixes the scroll-tap cancellation issues on mobile
+	btn.addEventListener("pointerup", async (e) => {
 		e.stopPropagation();
-		onClick(e);
+
+		if (busy) return;
+		busy = true;
+
+		try {
+			await onClick(e);
+		} finally {
+			busy = false;
+		}
 	});
 
 	return btn;
 }
 
 // Search
-
 const searchInput = document.getElementById("songSearch");
 let allGenres = null;
 
@@ -232,6 +240,7 @@ const songCache = new Map();
 const rawSongCache = new Map();
 let convertToBard;
 let rawSongData;
+const loadingPromises = new Map();
 
 async function loadSong(songPath) {
 	let songNotes;
@@ -239,19 +248,31 @@ async function loadSong(songPath) {
 	({ convertToBard } = await import("./noteMapper.js"));
 
 	if (songCache.has(songPath)) {
-		songNotes = songCache.get(songPath);
-		rawSongData = rawSongCache.get(songPath);
-	} else {
-		const res = await fetch(songPath);
-		rawSongData = await res.json();
-
-		songNotes = convertToBard(rawSongData, null, false);
-
-		songCache.set(songPath, songNotes);
-		rawSongCache.set(songPath, rawSongData);
+		return songCache.get(songPath);
 	}
 
-	return songNotes;
+	if (loadingPromises.has(songPath)) {
+		return loadingPromises.get(songPath);
+	}
+
+	const loadPromise = (async () => {
+		try {
+			const res = await fetch(songPath);
+			rawSongData = await res.json();
+
+			const songNotes = convertToBard(rawSongData, null, false);
+
+			songCache.set(songPath, songNotes);
+			rawSongCache.set(songPath, rawSongData);
+
+			return songNotes;
+		} finally {
+			loadingPromises.delete(songPath);
+		}
+	})();
+
+	loadingPromises.set(songPath, loadPromise);
+	return loadPromise;
 }
 
 // Play song logic
@@ -282,7 +303,7 @@ function ensureTimeline(songNotes) {
 }
 
 function scheduler() {
-	if (!isPlaying) return;
+	if (!isPlaying || !audioCtx) return;
 
 	const now = audioCtx.currentTime;
 	const songTime = now - startCtxTime;
@@ -319,6 +340,9 @@ async function playSong(songNotes) {
 		.map((item) => item.build);
 
 	audioCtx = await ensureAudioLoaded(uniqueNotes);
+
+	if (!audioCtx || !audioCtx.resume) return;
+
 	await audioCtx.resume();
 
 	ensureTimeline(songNotes);
@@ -331,17 +355,15 @@ async function playSong(songNotes) {
 }
 
 export function pauseSong() {
-	if (!isPlaying) return;
+	if (!isPlaying || !audioCtx) return;
 
 	isPlaying = false;
 	pauseTime = audioCtx.currentTime - startCtxTime;
 
-	currentPlaybackBtn?.classList.remove("playing");
-
-	if (currentSongEle) {
-		currentSongEle.style.backgroundColor = "";
-		currentSongEle = null;
-	}
+	document.querySelectorAll('.songControls .playbackBtn.playing').forEach(btn => {
+		btn.classList.remove('playing');
+		btn.closest('.song').style.backgroundColor = "";
+	});
 
 	if (schedulerTimer) {
 		clearInterval(schedulerTimer);
@@ -357,14 +379,10 @@ function resetSong() {
 	scheduledIndex = 0;
 	timeline = [];
 
-	if (currentPlaybackBtn) {
-		currentPlaybackBtn.classList.remove("playing");
-	}
-
-	if (currentSongEle) {
-		currentSongEle.style.backgroundColor = "";
-		currentSongEle = null;
-	}
+	document.querySelectorAll('.songControls .playbackBtn.playing').forEach(btn => {
+		btn.classList.remove('playing');
+		btn.closest('.song').style.backgroundColor = "";
+	});
 }
 
 document.getElementById("closeOverlay").addEventListener("click", resetSong);

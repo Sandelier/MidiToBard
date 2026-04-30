@@ -124,7 +124,11 @@ export async function ensureAudioLoaded(requiredNotes = []) {
 		document.body.classList.remove("waiting");
 	})();
 
-	loadingPromise = null;
+	try {
+		await loadingPromise;
+	} finally {
+		loadingPromise = null;
+	}
 
 	return audioCtx;
 }

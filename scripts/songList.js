@@ -43,7 +43,7 @@ function addSongs(songStatistics) {
 			.replace("list\\", "")
 			.replace(".json", "");
 
-		const songPath = "../songs/" + filePath;
+		const songPath = "./songs/" + filePath;
 
 		const songEle = createDiv("", "song");
 		songEle.dataset.filePath = songPath;

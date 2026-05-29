@@ -1,8 +1,18 @@
+window.process = {
+  env: {
+	NODE_ENV: "development"
+  }
+};
+
 const songListEle = document.getElementById("songList");
 const songPanel = document.getElementById("songPanel");
 
 let songsAdded = false;
 let isLoadingSong = false;
+
+let songVirtualizer;
+let songEntries = [];
+let filteredSongEntries = [];
 
 export async function main() {
 	(await import("./overlays/overlayController.js")).showOverlay();
@@ -14,11 +24,13 @@ export async function main() {
 	const rawSongStatistics = await response.json();
 
 	const songStatistics = {};
+	const folderMapping = rawSongStatistics.folderMapping;
 
 	const now = Date.now();
 	const week = 1000 * 60 * 60 * 24 * 7;
 
 	const sortedTimestamps = Object.keys(rawSongStatistics)
+		.filter(key => key !== "folderMapping" && !isNaN(Number(key)))
 		.map(Number)
 		.sort((a, b) => b - a);
 
@@ -27,10 +39,20 @@ export async function main() {
 		const isNew = (now - timestamp) < week;
 
 		for (const [songPath, songData] of Object.entries(songs)) {
+			const parts = songPath.split("\\");
+			const genre = parts[1];
+			let source = parts[2];
+
+			if (folderMapping[source]) {
+				source = folderMapping[source];
+			}
+
 			songStatistics[songPath] = {
 				...songData,
 				newSong: isNew,
-				addedAt: timestamp
+				addedAt: timestamp,
+				genre,
+				source
 			};
 		}
 	}
@@ -38,172 +60,266 @@ export async function main() {
 	addSongs(songStatistics);
 }
 
-// Song structure to DOM
-function addSongs(songStatistics) {
-	const fragment = document.createDocumentFragment();
+function addSongs(songStatistics,) {
 	const genresMap = new Map();
 	const playedSongs = JSON.parse(localStorage.getItem("playedSongs") || "{}");
 
-	Object.entries(songStatistics).forEach(([filePath, data], index) => {
+	songEntries = Object.entries(songStatistics).map(([filePath, data], index) => {
 
 		const genreKey = data.genre;
 		genresMap.set(
 			genreKey,
 			(genresMap.get(genreKey) || 0) + 1
 		);
-
 		const songName = filePath
-			.replace("list\\", "")
-			.replace("Sesh Midi Vault\\", "")
+			.split("\\")
+			.pop()
 			.replace(".json", "");
 
 		const songPath = "./songs/" + filePath;
 
-		const songEle = createDiv("", "song");
-		songEle.dataset.songPath = songPath;
-		songEle.dataset.songName = songName;
-
-        // Info
-		const info = createDiv("", "songInfo");
-
-		const titleContainer = createDiv("", "songTitleContainer");
-		const title = createDiv(songName, "songTitle");
-		const indexEle = createDiv(`#${index + 1}`, "songIndex");
-		titleContainer.append(title, indexEle);
-
-		const source = createDiv(data.source, "songSource");
-		info.append(titleContainer, source);
-
-		// Meta
-		const meta = createDiv("", "songMeta");
-
-		const genre = createDiv(data.genre, "songGenre");
-		const duration = createDiv(
-			`${(data.duration / 1000).toFixed(1)}s`,
-			"songDuration"
-		);
-		const notes = createDiv(`${data.notes} notes`, "songNotes");
-
-		meta.append(genre, duration, notes);
-
-		if (data.newSong) {
-			meta.append(createDiv("New", "songNew"));
-		}
-
-		// Controls
-		const controls = createDiv("", "songControls");
-
-		const playbackBtn = document.createElement("button");
-		playbackBtn.className = "playbackBtn";
-
-		if (playedSongs[songPath]) {
-			playbackBtn.classList.add("playedSong");
-		}
-
-		playbackBtn.setAttribute("aria-label", `Playback ${songName}`);
-
-		playbackBtn.innerHTML = `
-			<svg class="songPlaybackSvg play" viewBox="0 0 12 24">
-				<polygon points="0,5 12,12 0,19"></polygon>
-			</svg>
-			<svg class="songPlaybackSvg pause" viewBox="0 0 12 24">
-				<rect x="1" y="5" width="4" height="14"></rect>
-				<rect x="7" y="5" width="4" height="14"></rect>
-			</svg>
-		`;
-
-		const addBtn = document.createElement("button");
-		addBtn.className = "addBtn";
-		addBtn.textContent = "+";
-
-		controls.append(playbackBtn, addBtn);
-
-		songEle.append(info, meta, controls);
-		fragment.appendChild(songEle);
+		return {
+			filePath,
+			data,
+			index,
+			songName,
+			songPath,
+			played: !!playedSongs[songPath],
+		};
 	});
+	filteredSongEntries = [...songEntries];
 
-	songListEle.appendChild(fragment);
+	initSongVirtualizer(genresMap);
+}
+
+function getGridRows() {
+	const width = songPanel.clientWidth || 1200;
+	const cols = Math.max(1, Math.floor(width / 340));
+	const rows = [];
+
+	for (let i = 0; i < filteredSongEntries.length; i += cols) {
+		rows.push(filteredSongEntries.slice(i, i + cols));
+	}
+
+	return rows;
+}
+
+async function initSongVirtualizer(genresMap) {
+	if (songsAdded) return;
 	songsAdded = true;
 
-	songListEle.addEventListener("pointerup", async (e) => {
-		const btn = e.target.closest("button");
+	const { Virtualizer, observeElementRect, observeElementOffset, elementScroll } = await import("../libs/tanstack/virtual-core/index.js");
 
-		if (!btn) return;
+	songVirtualizer = new Virtualizer({
+		count: getGridRows().length,
+		getScrollElement: () => songPanel.parentElement,
+		estimateSize: () => 117 + 10,
+		overscan: 2,
+		observeElementRect,
+		observeElementOffset,
+		scrollToFn: elementScroll,
+		onChange: renderVirtualSongs,
+	});
 
-		e.stopPropagation();
+	songVirtualizer._willUpdate();
 
-		const songEle = btn.closest(".song");
+	window.addEventListener("resize", () => {
+		if (!songVirtualizer) return;
 
-		if (!songEle) return;
+		const rowCount = getGridRows().length;
 
-		const songPath = songEle.dataset.songPath;
-		const songName = songEle.dataset.songName;
+		songVirtualizer.setOptions({
+			...songVirtualizer.options,
+			count: rowCount,
+		});
 
-		if (btn.classList.contains("playbackBtn")) {
+		songVirtualizer.measure();
+		songVirtualizer._willUpdate();
+	});
 
-			if (isLoadingSong) return;
-			isLoadingSong = true;
+	setupUI(genresMap);
+}
 
-			try {
-				const songNotes = await loadSong(songPath);
-				playedSongs[songPath] = true;
-				localStorage.setItem("playedSongs", JSON.stringify(playedSongs));
-				btn.classList.add("playedSong");
+function renderVirtualSongs(instance) {
+	const ul = songListEle;
+	const rows = getGridRows();
 
-				if (songPath !== currentSongPath) {
-					currentSongPath = songPath;
+	ul.innerHTML = "";
+	ul.style.position = "relative";
+	ul.style.height = `${instance.getTotalSize()}px`;
 
-					pauseSong();
-					timeline = [];
-					pauseTime = 0;
-					scheduledIndex = 0;
+	instance.getVirtualItems().forEach((vRow) => {
+		const rowSongs = rows[vRow.index];
 
-					document.querySelectorAll(".playbackBtn.playing").forEach(playBtn => {
-						playBtn.classList.remove("playing");
-						playBtn.closest(".song").style.backgroundColor = "";
-					});
+		const row = document.createElement("div");
 
-					await playSong(songNotes);
+		row.style.position = "absolute";
+		row.style.top = "0";
+		row.style.left = "0";
+		row.style.width = "100%";
+		row.style.transform = `translateY(${vRow.start}px)`;
 
-					btn.classList.add("playing");
-					songEle.style.backgroundColor = "#2a2a2a";
+		row.style.display = "grid";
+		row.style.gridTemplateColumns =
+			"repeat(auto-fill, minmax(330px, 1fr))";
+		row.style.gap = "10px";
 
-					return;
-				}
+		rowSongs.forEach((song) => {
+			row.appendChild(createSongElement(song));
+		});
 
-				if (isPlaying) {
-					pauseSong();
-					document.querySelectorAll(".playbackBtn.playing").forEach(playBtn => {
-						playBtn.classList.remove("playing");
-						playBtn.closest(".song").style.backgroundColor = "";
-					});
+		ul.appendChild(row);
+	});
+}
 
-				} else {
-					await playSong(songNotes);
-					btn.classList.add("playing");
-					songEle.style.backgroundColor = "#2a2a2a";
-				}
+function createSongElement({ filePath, data, songName, songPath, index, played }) {
+	const songEle = createDiv("", "song");
+	songEle.dataset.songPath = songPath;
+	songEle.dataset.songName = songName;
 
-			} finally {
-				isLoadingSong = false;
-			}
+	// Info
+	const info = createDiv("", "songInfo");
 
-		} else if (btn.classList.contains("addBtn")) {
+	const titleContainer = createDiv("", "songTitleContainer");
+	const title = createDiv(songName, "songTitle");
+	const indexEle = createDiv(`#${index + 1}`, "songIndex");
 
+	titleContainer.append(title, indexEle);
+
+	const source = createDiv(data.source, "songSource");
+	info.append(titleContainer, source);
+
+	// Meta
+	const meta = createDiv("", "songMeta");
+
+	const genre = createDiv(data.genre, "songGenre");
+	const duration = createDiv(`${(data.duration / 1000).toFixed(1)}s`, "songDuration");
+	const notes = createDiv(`${data.notes} notes`, "songNotes");
+
+	meta.append(genre, duration, notes);
+
+	if (data.newSong) {
+		meta.append(createDiv("New", "songNew"));
+	}
+
+	// Controls
+	const controls = createDiv("", "songControls");
+
+	const playbackBtn = document.createElement("button");
+	playbackBtn.className = "playbackBtn";
+
+	if (played) playbackBtn.classList.add("playedSong");
+
+	if (songPath === currentSongPath && isPlaying) playbackBtn.classList.add("playing");
+
+	playbackBtn.setAttribute("aria-label", `Playback ${songName}`);
+
+	playbackBtn.innerHTML = `
+		<svg class="songPlaybackSvg play" viewBox="0 0 12 24">
+			<polygon points="0,5 12,12 0,19"></polygon>
+		</svg>
+		<svg class="songPlaybackSvg pause" viewBox="0 0 12 24">
+			<rect x="1" y="5" width="4" height="14"></rect>
+			<rect x="7" y="5" width="4" height="14"></rect>
+		</svg>
+	`;
+
+	const addBtn = document.createElement("button");
+	addBtn.className = "addBtn";
+	addBtn.textContent = "+";
+
+	controls.append(playbackBtn, addBtn);
+
+	songEle.append(info, meta, controls);
+
+	return songEle;
+}
+
+songListEle.addEventListener("pointerup", async (e) => {
+	const btn = e.target.closest("button");
+	if (!btn) return;
+
+	e.stopPropagation();
+
+	const songEle = btn.closest(".song");
+	if (!songEle) return;
+
+	const songPath = songEle.dataset.songPath;
+	const songName = songEle.dataset.songName;
+
+	if (btn.classList.contains("playbackBtn")) {
+
+		if (isLoadingSong) return;
+		isLoadingSong = true;
+
+		try {
 			const songNotes = await loadSong(songPath);
 
-			(await import("./noteProcessor.js")).directProcess(
-				songNotes,
-				rawSongData,
-				songName
-			);
+			const playedSongs = JSON.parse(localStorage.getItem("playedSongs") || "{}");
+			playedSongs[songPath] = true;
+			localStorage.setItem("playedSongs", JSON.stringify(playedSongs));
 
-			document.getElementById("closeOverlay").click();
+			const songEntry = songEntries.find(song => song.songPath === songPath);
+
+			if (songEntry) songEntry.played = true;
+
+			btn.classList.add("playedSong");
+
+			if (songPath !== currentSongPath) {
+				currentSongPath = songPath;
+
+				pauseSong();
+				timeline = [];
+				pauseTime = 0;
+				scheduledIndex = 0;
+
+				document.querySelectorAll(".playbackBtn.playing").forEach(playBtn => {
+					playBtn.classList.remove("playing");
+					playBtn.closest(".song").style.backgroundColor = "";
+				});
+
+				await playSong(songNotes);
+
+				btn.classList.add("playing");
+				songEle.style.backgroundColor = "#2a2a2a";
+				return;
+			}
+
+			if (isPlaying) {
+				pauseSong();
+				document.querySelectorAll(".playbackBtn.playing").forEach(playBtn => {
+					playBtn.classList.remove("playing");
+					playBtn.closest(".song").style.backgroundColor = "";
+				});
+			} else {
+				await playSong(songNotes);
+				btn.classList.add("playing");
+				songEle.style.backgroundColor = "#2a2a2a";
+			}
+
+		} finally {
+			isLoadingSong = false;
 		}
-	});
 
-	songListEle.appendChild(fragment);
-	songsAdded = true;
+	} else if (btn.classList.contains("addBtn")) {
+
+		const songNotes = await loadSong(songPath);
+
+		(await import("./noteProcessor.js")).directProcess(
+			songNotes,
+			rawSongData,
+			songName,
+			{
+				"genre": songEle.querySelector('.songGenre').textContent,
+				"source": songEle.querySelector('.songSource').textContent
+			}
+		);
+
+		document.getElementById("closeOverlay").click();
+	}
+});
+
+function setupUI(genresMap) {
 
 	const genresPanel = document.getElementById("genresPanel");
 	const statusPanel = document.getElementById("statusPanel");
@@ -321,55 +437,53 @@ const searchInput = document.getElementById("songSearch");
 let allGenres = null;
 let statusFilter = null;
 
-searchInput.addEventListener("input", () => {
-	const query = searchInput.value.toLowerCase();
-	const songs = document.querySelectorAll("#songList .song");
+function updateSongFilters() {
+	const query = searchInput.value.toLowerCase().trim();
 
 	const isGenre = allGenres.includes(query);
 
-	songs.forEach(song => {
-		const title = song.querySelector(".songTitle").textContent.toLowerCase();
-		const source = song.querySelector(".songSource").textContent.toLowerCase();
-		const genre = song.querySelector(".songGenre").textContent.toLowerCase();
+	filteredSongEntries = songEntries.filter((song) => {
+		const title = song.songName?.toLowerCase();
+		const source = song.data.source?.toLowerCase();
+		const genre = song.data.genre?.toLowerCase();
 
 		if (statusFilter) {
-			const newSong = song.querySelector(".songNew");
-			const isPlayed = song.querySelector(".playedSong");
 
-			if (statusFilter === "new") {
-				if (!newSong) {
-					song.style.display = "none";
-					return;
-				}
+			if (statusFilter === "new" && !song.data.newSong) {
+				return false;
 			}
 
-			if (statusFilter === "played") {
-				if (!isPlayed) {
-					song.style.display = "none";
-					return;
-				}
+			if (statusFilter === "played" && !song.played) {
+				return false;
 			}
 
-			if (statusFilter === "unplayed") {
-				if (isPlayed) {
-					song.style.display = "none";
-					return;
-				}
+			if (statusFilter === "unplayed" && song.played) {
+				return false;
 			}
 		}
 
 		if (isGenre) {
-			song.style.display = genre === query ? "" : "none";
-			return;
+			return genre === query;
 		}
 
-		if (title.includes(query) || source.includes(query)) {
-			song.style.display = "";
-		} else {
-			song.style.display = "none";
-		}
+		return (
+			title.includes(query) ||
+			source && source.includes(query)
+		);
 	});
-});
+
+	songVirtualizer.setOptions({
+		...songVirtualizer.options,
+		count: getGridRows().length,
+	});
+
+	songVirtualizer.scrollToOffset(0);
+
+	songVirtualizer.measure();
+	songVirtualizer._willUpdate();
+}
+
+searchInput.addEventListener("input", updateSongFilters);
 
 // Load song
 const songCache = new Map();

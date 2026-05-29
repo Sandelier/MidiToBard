@@ -370,8 +370,11 @@ function handlePlayToggle() {
 
 overlay.addEventListener("keydown", (e) => {
 	if (e.code === "Space") {
-		e.preventDefault();
-        handlePlayToggle();
+        const computed = window.getComputedStyle(bardNoteContainer);
+        if (computed.display !== "none" && computed.visibility !== "hidden") {
+            e.preventDefault();
+            handlePlayToggle();
+        }
 	}
 });
 

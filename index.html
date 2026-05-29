@@ -25,6 +25,7 @@
     <header>
         <button id="infoBtn">Info</button>
         <button id="songListBtn">Song list</button>
+        <a href="https://github.com/Sandelier/LuteGuide" target="_blank" rel="noopener noreferrer">LuteGuide</a>
         <button id="deviceLayoutBtn">Device layout</button>
         <button id="noteOverrideBtn">Note Override</button>
     </header>
@@ -87,6 +88,22 @@
                     <input type="text" name="name" class="name" placeholder="name" autocomplete="off">
                 </label>
 
+                <div class="dropdown" data-dropdown="meta">
+                  <button class="dropdown-btn">Metadata</button>
+                
+                  <div class="dropdown-menu">
+                    <label>
+                      Source
+                      <input type="text" data-meta="source" placeholder="source" autocomplete="off">
+                    </label>
+                
+                    <label>
+                      Genre
+                      <input type="text" data-meta="genre" placeholder="genre" autocomplete="off">
+                    </label>
+                  </div>
+                </div>
+
                 <div>
                     <span>Notes:</span>
                     <span class="notes"></span>
@@ -107,25 +124,25 @@
                     </select>
                 </label>
 
-                <div id="modsDropdown">
-                    <button id="modsBtn">Modifiers</button>
-                    <div id="modsMenu">
-                        <label>
-                            Sharp
-                            <input type="checkbox" value="sharp" checked>
-                        </label>
-                        
-                        <label>
-                            Octave Up
-                            <input type="checkbox" value="octUp" checked>
-                        </label>
-
-                        <label>
-                            Octave Down
-                            <input type="checkbox" value="octDown" checked>
-                        </label>
-
-                    </div>
+                <div class="dropdown" data-dropdown="mods">
+                  <button class="dropdown-btn">Modifiers</button>
+                
+                  <div class="dropdown-menu">
+                    <label>
+                      Sharp
+                      <input type="checkbox" value="sharp" checked>
+                    </label>
+                
+                    <label>
+                      Octave Up
+                      <input type="checkbox" value="octUp" checked>
+                    </label>
+                
+                    <label>
+                      Octave Down
+                      <input type="checkbox" value="octDown" checked>
+                    </label>
+                  </div>
                 </div>
 
                 <span>Grouping settings</span>
@@ -144,16 +161,16 @@
             <div id="downloadContainer">
                 <button id="downloadBtn">Download</button>
                 <select id="formatSelect" aria-label="Download format">
-                    <option value="txt" selected>txt</option>
+                    <option value="txt">txt</option>
                     <option value="xlsx">xlsx</option>
-                    <option value="json">json</option>
+                    <option value="json" selected>json</option>
                 </select>
             </div>
         </div>
 
         <div id="madeBy">
             <a href="https://github.com/Sandelier/MidiToBard" target="_blank" rel="noopener noreferrer">
-                Sandelier - 1.0.1
+                Sandelier - 1.0.2
                 <img src="images/github.svg" alt="GitHub" />
             </a>
         </div>
@@ -199,6 +216,11 @@
             		</ul>
                     <p>Red is not inherently bad, but if theres alternating notes, the song might be impossible to play</p>
             	</section>
+                <section>
+                    <a href="https://github.com/Sandelier/MidiToBard/issues" target="_blank" rel="noopener noreferrer"><h3>LuteGuide</h3></a>
+            		<p>I have made an overlay for Neverwinter that displays when and which notes to play.</p>
+                    <p>It is not an autoplayer, but it makes reading the notes much easier.</p>
+            	</section>
             	<section>
             		<h3>Privacy</h3>
             		<p>I track unique visitor counts using Goatcounter. No detailed information is collected, such as referrers, device information, location or language</p>
@@ -214,6 +236,7 @@
             		<h3>Acknowledgements</h3>
                     <p><a href="https://github.com/Tonejs/Midi" target="_blank" rel="noopener noreferrer">tone.js 2.0.28</a> used for manipulating Midi files</p>
                     <p><a href="https://github.com/exceljs/exceljs" target="_blank" rel="noopener noreferrer">ExcelJS 4.4.0</a> used to save notes in Excel</p>
+                    <p><a href="https://tanstack.com/virtual/latest" target="_blank" rel="noopener noreferrer">virtual-core 3.14.0</a> used for virtual song list</p>
             	</section>
             </div>
 

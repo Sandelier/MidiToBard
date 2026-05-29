@@ -81,12 +81,12 @@
 
 /* Modifiers select */
 
-#modsDropdown {
+.dropdown {
     position: relative;
     display: inline-block;
 }
 
-#modsMenu {
+.dropdown-menu {
     display: none;
     position: absolute;
     top: 100%;
@@ -99,27 +99,27 @@
     border-radius: 10px;
 }
 
-#modsBtn {
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-btn {
     text-align: left;
     background-color: #2b2a33 !important;
     padding: 2px 5px !important;
     color: white;
 }
 
-#modsMenu input {
+.dropdown-menu input {
     flex: 0;
     min-width: unset;
 }
 
-#modsMenu.show {
-    display: block;
-}
-
-#modsMenu label {
+.dropdown-menu label {
     padding: 5px;
     color: white;
 }
 
-#modsMenu label:hover {
-    background: #44434b;;
+.dropdown-menu label:hover {
+    background: #44434b;
 }

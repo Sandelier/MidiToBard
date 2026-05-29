@@ -14,9 +14,12 @@ formatEle.addEventListener("change", () => {
 export async function main() {
     const { groupNotes, rawBardNotes } = await import("./noteProcessor.js");
 
+    const threshold = parseFloat(thresholdEle.value)
+    const maxLength = parseInt(maxLengthEle.value)
+
     const { notes, delays } = groupNotes(rawBardNotes, {
-        threshold: parseFloat(thresholdEle.value),
-        maxLength: parseInt(maxLengthEle.value)
+        threshold: threshold,
+        maxLength: maxLength
     });
 
     const format = formatEle.value;
@@ -27,7 +30,27 @@ export async function main() {
     } else if (format == "txt") {
         blob = new Blob([notes], { type: "text/plain" });
     } else if (format == "json") {
-        const bardJson = JSON.stringify(rawBardNotes, null, 4);
+        const source = document.querySelector('input[data-meta="source"]').value;
+        const genre = document.querySelector('input[data-meta="genre"]').value;
+
+        const meta = {
+            threshold: threshold,
+            max_length: maxLength
+        };
+
+        if (source !== "") {
+            meta.source = source;
+        }
+
+        if (genre !== "") {
+            meta.genre = genre;
+        }
+
+        const bardJson = JSON.stringify([
+            meta,
+            ...rawBardNotes
+        ], null, 4);
+
         blob = new Blob([bardJson], { type: "application/json" });
     } else {
         console.error("Unknown download format");

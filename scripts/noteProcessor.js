@@ -1,7 +1,6 @@
 const converterEle = document.getElementById('converter');
 const thresholdEle = converterEle.querySelector('.threshold');
 const maxLengthEle = converterEle.querySelector('.maxLength');
-const modsDropdownEle = document.getElementById('modsDropdown');
 
 const parserEle = document.getElementById('parser');
 const nameEle = parserEle.querySelector('.name');
@@ -66,8 +65,9 @@ export async function main() {
 		console.error("Unknown mode");
 		return;
 	}
+    document.querySelectorAll('.dropdown[data-dropdown="meta"] input[type="text"]').forEach(input => input.value = "");
+	document.querySelector('.dropdown[data-dropdown="mods"]').style.display = "";
 
-	modsDropdownEle.style.display = "";
 	rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
 
 	converterEle.querySelector('.name').value = nameEle.value;
@@ -97,12 +97,13 @@ export async function main() {
 }
 
 // songNotes should be converted to bard notes before calling this function
-export async function directProcess(songNotes, rawSongNotes, name) {
+export async function directProcess(songNotes, rawSongNotes, name, metadata) {
 	rawBardNotes = songNotes;
 	processedNotes = rawSongNotes;
 	modifyNotes = false;
 	// We should still set it so other functions can use converttobard
 	({ convertToBard } = await import("./noteMapper.js"));
+    document.querySelectorAll('.dropdown[data-dropdown="meta"] input[type="text"]').forEach(input => input.value = "");
 
 	converterEle.querySelector(".name").value = name;
 	converterEle.querySelector(".notes").textContent = rawBardNotes.length;
@@ -116,8 +117,11 @@ export async function directProcess(songNotes, rawSongNotes, name) {
 	thresholdEle.value = groupedNotes.threshold;
 	maxLengthEle.value = groupedNotes.maxLength;
 
-	modsDropdownEle.style.display = "none";
+	document.querySelector('.dropdown[data-dropdown="mods"]').style.display = "none";
 	converterEle.style.display = "flex";
+
+    document.querySelector('input[data-meta="source"]').value = metadata.source;
+    document.querySelector('input[data-meta="genre"]').value = metadata.genre;
 
 	preloadAudio();
 }
@@ -253,30 +257,34 @@ deviceSelect.addEventListener('change', () => {
 	rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
 });
 
-document.querySelectorAll("#modsMenu input[type='checkbox']");
 
 // Modifier change
-const modsBtn = document.getElementById("modsBtn");
-const modsMenu = document.getElementById("modsMenu");
-const modsBoxes = modsMenu.querySelectorAll("input[type='checkbox']");
+document.addEventListener("click", (e) => {
+    document.querySelectorAll(".dropdown").forEach(dropdown => {
+        const btn = dropdown.querySelector(".dropdown-btn");
+        const menu = dropdown.querySelector(".dropdown-menu");
 
-modsBtn.addEventListener("click", (e) => {
-	e.stopPropagation();
-	modsMenu.classList.toggle("show");
+        const clickedInside = dropdown.contains(e.target);
+
+        if (!clickedInside) {
+            menu.classList.remove("show");
+        }
+    });
 });
 
 document.addEventListener("click", (e) => {
-	if (!modsBtn.contains(e.target) && !modsMenu.contains(e.target)) {
-		modsMenu.classList.remove("show");
-	}
+    const btn = e.target.closest(".dropdown-btn");
+    if (!btn) return;
+
+    const dropdown = btn.closest(".dropdown");
+    const menu = dropdown.querySelector(".dropdown-menu");
+
+    menu.classList.toggle("show");
 });
 
-modsMenu.addEventListener("click", (e) => {
-	e.stopPropagation();
-});
-
-modsBoxes.forEach(cb => {
-	cb.addEventListener("change", () => {
-		rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
-	});
+document.addEventListener("change", (e) => {
+    const cb = e.target;
+    if (cb.matches(".dropdown-menu input[type='checkbox']")) {
+        rawBardNotes = convertToBard(processedNotes, bpmForConversion, modifyNotes);
+    }
 });
